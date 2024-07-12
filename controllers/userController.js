@@ -72,9 +72,22 @@ const registerController =async (req,res)=>{
                 message:"invalid credentials"
             })
         }
-        res.status(200).send({
+        // token
+        const token = user.generateToken();
+        res.status(200)
+        .cookie("token", token,{    
+            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),  
+            // secure: process.env.NODE_ENV === "development" ? true : false,
+            // httpOnly: process.env.NODE_ENV === "development" ? true : false,
+            // sameSite: process.env.NODE_ENV === "development" ? true : false
+            secure: process.env.NODE_ENV !== "development",
+                httpOnly: process.env.NODE_ENV !== "development",
+                sameSite: process.env.NODE_ENV !== "development",
+        })
+        .send({
             success:true,
             message: "Login Successfully",
+            token,
             user,
         })
     }catch(error){
@@ -87,8 +100,56 @@ const registerController =async (req,res)=>{
     }
 }
 
+// get user profile
+const getUserProfileController = async(req,res)=>{
+    try{
+        const user = await userModel.findById(req.user._id);
+        res.status(200).send({
+            success:true,
+            message:'User profile fetched successfully',
+            user
+        })
+    }catch(error){
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message : "error in profile api",
+            error
+        })
+    }
+
+}
+
+// logout
+const logOutController = async(req,res)=>{
+    try{
+        res.status(200).cookie("token", "", {    
+            expires: new Date(Date.now()),  
+            // secure: process.env.NODE_ENV === "development" ? true : false,
+            // httpOnly: process.env.NODE_ENV === "development" ? true : false,
+            // sameSite: process.env.NODE_ENV === "development" ? true : false
+            secure: process.env.NODE_ENV !== "development",
+                httpOnly: process.env.NODE_ENV !== "development",
+                sameSite: process.env.NODE_ENV !== "development",
+        }).send({
+            success: true,
+            message: "logout successfully"
+        })
+    }catch(error){
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message : "error in logout api",
+            error
+        })
+    }
+
+}
+
 
 module.exports = {
     registerController,
     loginController,
+    getUserProfileController,
+    logOutController,
 };

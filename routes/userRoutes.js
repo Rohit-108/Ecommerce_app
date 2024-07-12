@@ -1,17 +1,28 @@
 const express = require('express');
-// const registerController = require('../controllers/userController.js');
-const user = require('../controllers/userController');
+const {
+    registerController,
+    loginController,
+    getUserProfileController,
+    logOutController
+} = require('../controllers/userController');
+const isAuth = require("../middlewares/authMiddleware.js");
 
-// router object 
-const router = express.Router()
+// Create the router object
+const router = express.Router();
 
-// routes
-// register
-// router.post('/register',registerController)
-router.post('/register',user.registerController)
+// Define the routes
+// Register
+router.post('/register', registerController);
 
-// login
-router.post('/login',user.loginController)
+// Login
+router.post('/login', loginController);
 
-// export
+
+// Get user profile (protected route)
+router.get('/profile', isAuth, getUserProfileController);
+
+// logout
+router.get('/logout', isAuth, logOutController)
+
+// Export the router
 module.exports = router;
