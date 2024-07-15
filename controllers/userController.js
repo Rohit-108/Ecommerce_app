@@ -1,4 +1,6 @@
 const userModel = require('../models/userModel')
+const getDataUri = require('../utils/features.js')
+const cloudinary = require("cloudinary")
 const registerController =async (req,res)=>{
     try{
         const {name,email,password,address,city,country,phone}=req.body;
@@ -143,13 +145,111 @@ const logOutController = async(req,res)=>{
             error
         })
     }
+}
+// update user profile
+const updateProfileController = async(req,res)=>{
+    try{
+        const user = await userModel.findById(req.user._id)
+        const{name,email,address,city,country,phone} = req.body
+        // validation + update
+        if(name) user.name = name
+        if(email) user.email = email
+        if(address) user.address = address
+        if(city) user.city = city
+        if(country) user.country = country
+        if(phone) user.phone = phone
+        // save user
+        await user.save()
+        res.status(200).send({
+            success: true,
+            message: "user profile updated"
+        })
+    }catch(error){
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message : "error in logout api",
+            error
+        })
+    }
+}
+
+// update password
+const updatePasswordController = async(req,res)=>{
+    try{
+        const user = await userModel.findById(req.user._id)
+        const {oldPassword, newPassword}= req.body;
+        // validation
+        if(!oldPassword || !newPassword){
+            return res.status(500).send({
+                success:false,
+                message:'Please provide old or new password'
+            })
+        }
+        // old pass match
+        const isMatch = await user.comparePassword(oldPassword)
+        // validation
+        if(!isMatch){
+            return res.status(500).send({
+                success: false,
+                message :"Invalid Old Password"
+            })
+        }
+        user.password = newPassword;
+        await user.save();
+        res.status(200).send({
+            success:true,
+            message: "password updated successfully",
+        });
+    }catch(error){
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message : "error in update password API",
+            error
+        })
+    }
 
 }
 
+// update user Profile photo
+const updateProfilepicController = async(req,res)=>{
+    try{
+        const user = await userModel.findById(req.user._id)
+        // file get from user photo
+        const file = getDataUri(req.file)
+        // delete pre image
+        await cloudinary.v2.uploader.destroy(user.profilePic.public_id)
+        // update
+        const cdb = await cloudinary.v2.uploader.upload(file.content)
+        user.profilePic = {
+            public_id: cdb.public_id,
+            url: cdb.secure_url
+        }
+        // save user pic function
+        await user.save()
+        res.status(200).send({
+            sucess : true,
+            message : "profile picture updated",
+        });
+
+    }catch(error){
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message : "error in update profile pic API",
+            error
+        })
+    }
+
+};
 
 module.exports = {
     registerController,
     loginController,
     getUserProfileController,
     logOutController,
+    updateProfileController,
+    updatePasswordController,
+    updateProfilepicController,
 };

@@ -34,13 +34,19 @@ const userSchema = new mongoose.Schema({
         required:[true,'phone no is required']
     },
     profilePic:{
-        type:String,
+        public_id : {
+            type : String,
+        },
+        url : {
+            type :String,
+        }
     },
 },{timestamps:true});
 
 // for hash
 
 userSchema.pre('save', async function(next){
+    if(!this.isModified('password')) return next()
     this.password = await bcrypt.hash(this.password,10);
     next()
 })

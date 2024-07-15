@@ -4,13 +4,21 @@ const morgan = require('morgan');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const cloudinary = require('cloudinary');
 
 // dot env config
 dotenv.config();
 
 // database connect
 connectDB();
+
+// cloudinary config
+cloudinary.v2.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key:process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET,
+})
 
 // rest object
 const app = express();
