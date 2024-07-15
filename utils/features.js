@@ -7,4 +7,8 @@ const getDataUri = (file)=>{
     return parser.format(extName, file.buffer);
 }
 
+// const getDataUri = (file) => {
+//     return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+// };
+
 console.log(getDataUri);

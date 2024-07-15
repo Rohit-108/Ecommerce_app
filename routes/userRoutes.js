@@ -36,7 +36,9 @@ router.put('/profile-update', isAuth, updateProfileController )
 router.put('/update-password', isAuth, updatePasswordController)
 
 // UPDATE PROFILE PIC
-router.put('/update-picture', isAuth, singleUpload, updateProfilePicController);
+router.put('/update-picture', (req,res)=>{
+    console.log(req.body);
+});
 
 // Export the router
 module.exports = router;

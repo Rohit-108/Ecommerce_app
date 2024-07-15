@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
 const cookieParser = require('cookie-parser');
 const cloudinary = require('cloudinary');
+const bodyParser = require('body-parser')
 
 // dot env config
 dotenv.config();
@@ -25,9 +26,10 @@ const app = express();
 
 // middleware
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json(),bodyParser.urlencoded({extended:true}))
 app.use(cors());
 app.use(cookieParser());
+
 
 
 // route

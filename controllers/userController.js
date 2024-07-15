@@ -3,9 +3,9 @@ const getDataUri = require('../utils/features.js')
 const cloudinary = require("cloudinary").v2;
 const registerController =async (req,res)=>{
     try{
-        const {name,email,password,address,city,country,phone}=req.body;
+        const {name,email,password,address,city,country,phone, profilePic}=req.body;
         // validation
-        if(!name || !email || !password || !city || !address || !country  || !phone){
+        if(!name || !email || !password || !city || !address || !country  || !phone || !profilePic){
             return res.status(500).send({
                 success : false,
                 message : "please provide all fields",
@@ -27,7 +27,8 @@ const registerController =async (req,res)=>{
             city,
             address,
             country,
-            phone
+            phone,
+            profilePic
         });
         res.status(201).send({
             success:true,
@@ -213,88 +214,88 @@ const updatePasswordController = async(req,res)=>{
 }
 
 // update user Profile photo
-// const updateProfilePicController = async(req,res)=>{
-//     try{
-//         const user = await userModel.findById(req.user._id)
-//         // file get from user photo
-//         const file = getDataUri(req.file);
-//         // delete pre image
-//         await cloudinary.v2.uploader.destroy(user.profilePic.public_id)
-//         // update
-//         const cdb = await cloudinary.v2.uploader.upload(file.content)
-//         user.profilePic = {
-//             public_id: cdb.public_id,
-//             url: cdb.secure_url
-//         }
-//         // save user pic function
-//         await user.save()
-//         res.status(200).send({
-//             sucess : true,
-//             message : "profile picture updated",
-//         });
-
-//     }catch(error){
-//         console.error(error);
-//         res.status(500).send({
-//             success: false,
-//             message : "error in update profile pic API",
-//             error
-//         })
-//     }
-
-// };
-
-const updateProfilePicController = async (req, res) => {
-    try {
-        const user = await userModel.findById(req.user._id);
-        if (!user) {
-            return res.status(404).send({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        if (!req.file) {
-            return res.status(400).send({
-                success: false,
-                message: "No file uploaded",
-            });
-        }
-
-        // Get data URI from file
+const updateProfilePicController = async(req,res)=>{
+    try{
+        const user = await userModel.findById(req.user._id)
+        // file get from user photo
         const file = getDataUri(req.file);
-
-        // Delete previous image from Cloudinary
-        if (user.profilePic && user.profilePic.public_id) {
-            await cloudinary.uploader.destroy(user.profilePic.public_id);
-        }
-
-        // Upload new image to Cloudinary
-        const result = await cloudinary.uploader.upload(file.content);
-
-        // Update user's profilePic
+        // delete pre image
+        // await cloudinary.v2.uploader.destroy(user.profilePic.public_id)
+        // update
+        const cdb = await cloudinary.v2.uploader.upload(file.content)
         user.profilePic = {
-            public_id: result.public_id,
-            url: result.secure_url,
-        };
-
-        // Save user
-        await user.save();
-
+            public_id: cdb.public_id,
+            url: cdb.secure_url
+        }
+        // save user pic function
+        await user.save()
         res.status(200).send({
-            success: true,
-            message: "Profile picture updated",
-            profilePic: user.profilePic,
+            sucess : true,
+            message : "profile picture updated",
         });
-    } catch (error) {
+
+    }catch(error){
         console.error(error);
         res.status(500).send({
             success: false,
-            message: "Error in update profile pic API",
-            error: error.message,
-        });
+            message : "error in update profile pic API",
+            error
+        })
     }
+
 };
+
+// const updateProfilePicController = async (req, res) => {
+//     try {
+//         const user = await userModel.findById(req.user._id);
+//         if (!user) {
+//             return res.status(404).send({
+//                 success: false,
+//                 message: "User not found",
+//             });
+//         }
+
+//         if (!req.file) {
+//             return res.status(400).send({
+//                 success: false,
+//                 message: "No file uploaded",
+//             });
+//         }
+
+//         // Get data URI from file
+//         const file = getDataUri(req.file);
+
+//         // Delete previous image from Cloudinary
+//         if (user.profilePic && user.profilePic.public_id) {
+//             await cloudinary.uploader.destroy(user.profilePic.public_id);
+//         }
+
+//         // Upload new image to Cloudinary
+//         const result = await cloudinary.uploader.upload(file.content);
+
+//         // Update user's profilePic
+//         user.profilePic = {
+//             public_id: result.public_id,
+//             url: result.secure_url,
+//         };
+
+//         // Save user
+//         await user.save();
+
+//         res.status(200).send({
+//             success: true,
+//             message: "Profile picture updated",
+//             profilePic: user.profilePic,
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send({
+//             success: false,
+//             message: "Error in update profile pic API",
+//             error: error.message,
+//         });
+//     }
+// };
 
 module.exports = {
     registerController,

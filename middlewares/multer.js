@@ -10,8 +10,10 @@ const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
 const singleUpload = (req, res, next) => {
+    console.log(req.body);
         upload.single("file")(req, res, function (err) {
                 if (err instanceof multer.MulterError) {
+                    console.log(err);
                         return res.status(400).json({ message: "File upload error" });
                     } else if (err) {
                             return res.status(500).json({ message: "Server error" });
@@ -21,3 +23,4 @@ const singleUpload = (req, res, next) => {
                 };
                 
 module.exports = singleUpload;
+

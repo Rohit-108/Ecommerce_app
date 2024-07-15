@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
             type : String,
         },
         url : {
-            type :String,
+            type : String,
         }
     },
 },{timestamps:true});
