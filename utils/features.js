@@ -1,14 +1,31 @@
-const dataUriParser = require('dataUri');
-const path = require("path")
+const DataUri = require("datauri");
+const path = require('path');
 
-const getDataUri = (file)=>{
-    const parser = new dataUriParser();
+const getDataUri = (file) => {
+    if (!file || !file.originalname || !file.buffer) {
+        throw new Error('File object is missing or invalid');
+    }
+
+    const parser = new DataUri();
     const extName = path.extname(file.originalname).toString();
     return parser.format(extName, file.buffer);
-}
+};
+
+module.exports = { getDataUri };
+
+
+// const DataURIParser = require("data-uri");
+// const path = require("path");
 
 // const getDataUri = (file) => {
-//     return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+//   const parser = new DataURIParser();
+//   const extName = path.extname(file.originalname).toString();
+//   return parser.format(extName, file.buffer);
 // };
 
-console.log(getDataUri);
+
+// module.exports = { getDataUri };
+
+// module.exports = {
+//   getDataUri: getDataUri
+// };

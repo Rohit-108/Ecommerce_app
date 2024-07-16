@@ -9,7 +9,10 @@ const {
     updateProfilePicController,
 } = require('../controllers/userController');
 const isAuth = require("../middlewares/authMiddleware.js");
+const upload = require('../middlewares/multer.js'); 
 const singleUpload = require('../middlewares/multer.js');
+const multer = require('multer');
+const allupload = multer({ dest: 'uploads/' });
 
 // Create the router object
 const router = express.Router();
@@ -21,24 +24,20 @@ router.post('/register', registerController);
 // Login
 router.post('/login', loginController);
 
-
 // Get user profile (protected route)
 router.get('/profile', isAuth, getUserProfileController);
 
-// logout
-router.get('/logout', isAuth, logOutController)
+// Logout
+router.get('/logout', isAuth, logOutController);
 
+// Update profile
+router.put('/profile-update', isAuth, updateProfileController);
 
-// update profile
-router.put('/profile-update', isAuth, updateProfileController )
+// Update password
+router.put('/update-password', isAuth, updatePasswordController);
 
-// update password
-router.put('/update-password', isAuth, updatePasswordController)
-
-// UPDATE PROFILE PIC
-router.put('/update-picture', (req,res)=>{
-    console.log(req.body);
-});
+// Update profile picture
+router.put('/update-picture', isAuth, singleUpload, updateProfilePicController);
 
 // Export the router
 module.exports = router;

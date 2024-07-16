@@ -1,11 +1,11 @@
 const userModel = require('../models/userModel')
-const getDataUri = require('../utils/features.js')
+const { getDataUri } = require('../utils/features');
 const cloudinary = require("cloudinary").v2;
 const registerController =async (req,res)=>{
     try{
-        const {name,email,password,address,city,country,phone, profilePic}=req.body;
+        const {name,email,password,address,city,country,phone}=req.body;
         // validation
-        if(!name || !email || !password || !city || !address || !country  || !phone || !profilePic){
+        if(!name || !email || !password || !city || !address || !country  || !phone ){
             return res.status(500).send({
                 success : false,
                 message : "please provide all fields",
@@ -28,7 +28,7 @@ const registerController =async (req,res)=>{
             address,
             country,
             phone,
-            profilePic
+            // profilePic
         });
         res.status(201).send({
             success:true,
@@ -146,7 +146,8 @@ const logOutController = async(req,res)=>{
             error
         })
     }
-}
+};
+
 // update user profile
 const updateProfileController = async(req,res)=>{
     try{
@@ -175,117 +176,171 @@ const updateProfileController = async(req,res)=>{
     }
 }
 
-// update password
-const updatePasswordController = async(req,res)=>{
-    try{
-        const user = await userModel.findById(req.user._id)
-        const {oldPassword, newPassword}= req.body;
-        // validation
-        if(!oldPassword || !newPassword){
-            return res.status(500).send({
-                success:false,
-                message:'Please provide old or new password'
-            })
+// update user passsword
+const updatePasswordController = async (req, res) => {
+    try {
+      const user = await userModel.findById(req.user._id);
+      const { oldPassword, newPassword } = req.body;
+      //valdiation
+      if (!oldPassword || !newPassword) {
+        return res.status(500).send({
+          success: false,
+          message: "Please provide old or new password",
+        });
+      }
+      // old pass check
+      const isMatch = await user.comparePassword(oldPassword);
+      //validaytion
+      if (!isMatch) {
+        return res.status(500).send({
+          success: false,
+          message: "Invalid Old Password",
+        });
+      }
+      user.password = newPassword;
+      await user.save();
+      res.status(200).send({
+        success: true,
+        message: "Password Updated Successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        success: false,
+        message: "Error In update password API",
+        error,
+      });
+    }
+  };
+
+/// Update user profile photo
+// const updateProfilePicController = async (req, res) => {
+//     try {
+//       const user = await userModel.findById(req.user._id);
+      
+
+
+//       // file get from client photo
+//       const file = getDataUri(req.file);
+//       // delete prev image
+//     //   await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
+//     if (!cloudinary) {
+//         throw new Error('Cloudinary is not initialized');
+//     }
+//       // update
+//       const cdb = await cloudinary.v2.uploader.upload(fileDataUri);
+//       console.log(cdb);
+//       user.profilePic = {
+//         public_id: cdb.public_id,
+//         url: cdb.secure_url,
+//       };
+//       // save func
+//       await user.save();
+  
+//       res.status(200).send({
+//         success: true,
+//         message: "profile picture updated",
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).send({
+//         success: false,
+//         message: "Error In update profile pic API",
+//         error: error.message,
+//       });
+//     }
+//   };
+const updateProfilePicController = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user._id);
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: "User not found",
+            });
         }
-        // old pass match
-        const isMatch = await user.comparePassword(oldPassword)
-        // validation
-        if(!isMatch){
+
+        // Check if file is uploaded
+        if (!req.file) {
+            return res.status(400).send({
+                success: false,
+                message: "No file uploaded",
+            });
+        }
+
+        // Convert file to data URI
+        const fileDataUri = getDataUri(req.file);
+        if (!fileDataUri) {
+            return res.status(400).send({
+                success: false,
+                message: "Failed to process the file",
+            });
+        }
+
+        // Check if Cloudinary is initialized
+        if (!cloudinary || !cloudinary.v2) {
+            throw new Error('Cloudinary is not initialized');
+        }
+
+        // Delete previous image from Cloudinary
+        if (user.profilePic && user.profilePic.public_id) {
+            await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
+        }
+
+        // Upload new image to Cloudinary
+        const cdb = await cloudinary.v2.uploader.upload(fileDataUri.content);
+        if (!cdb) {
             return res.status(500).send({
                 success: false,
-                message :"Invalid Old Password"
-            })
+                message: "Failed to upload image to Cloudinary",
+            });
         }
-        user.password = newPassword;
-        await user.save();
-        res.status(200).send({
-            success:true,
-            message: "password updated successfully",
-        });
-    }catch(error){
-        console.error(error);
-        res.status(500).send({
-            success: false,
-            message : "error in update password API",
-            error
-        })
-    }
 
-}
-
-// update user Profile photo
-const updateProfilePicController = async(req,res)=>{
-    try{
-        const user = await userModel.findById(req.user._id)
-        // file get from user photo
-        const file = getDataUri(req.file);
-        // delete pre image
-        // await cloudinary.v2.uploader.destroy(user.profilePic.public_id)
-        // update
-        const cdb = await cloudinary.v2.uploader.upload(file.content)
+        // Update user's profile picture
         user.profilePic = {
             public_id: cdb.public_id,
-            url: cdb.secure_url
-        }
-        // save user pic function
-        await user.save()
-        res.status(200).send({
-            sucess : true,
-            message : "profile picture updated",
-        });
+            url: cdb.secure_url,
+        };
 
-    }catch(error){
-        console.error(error);
+        // Save user
+        await user.save();
+
+        res.status(200).send({
+            success: true,
+            message: "Profile picture updated successfully",
+            profilePic: user.profilePic,
+        });
+    } catch (error) {
+        console.error("Error in update profile pic API", error);
         res.status(500).send({
             success: false,
-            message : "error in update profile pic API",
-            error
-        })
+            message: "Error in update profile pic API",
+            error: error.message,
+        });
     }
-
 };
+
 
 // const updateProfilePicController = async (req, res) => {
 //     try {
 //         const user = await userModel.findById(req.user._id);
-//         if (!user) {
-//             return res.status(404).send({
-//                 success: false,
-//                 message: "User not found",
-//             });
+//         const fileDataUri = getDataUri(req.file); // Assuming this returns the data URI string
+
+//         // Ensure cloudinary is properly configured and initialized
+//         if (!cloudinary) {
+//             throw new Error('Cloudinary is not initialized');
 //         }
 
-//         if (!req.file) {
-//             return res.status(400).send({
-//                 success: false,
-//                 message: "No file uploaded",
-//             });
-//         }
-
-//         // Get data URI from file
-//         const file = getDataUri(req.file);
-
-//         // Delete previous image from Cloudinary
-//         if (user.profilePic && user.profilePic.public_id) {
-//             await cloudinary.uploader.destroy(user.profilePic.public_id);
-//         }
-
-//         // Upload new image to Cloudinary
-//         const result = await cloudinary.uploader.upload(file.content);
-
-//         // Update user's profilePic
+//         const cloudinaryResponse = await cloudinary.uploader.upload(file.content); // Pass the data URI directly
 //         user.profilePic = {
-//             public_id: result.public_id,
-//             url: result.secure_url,
+//             public_id: cloudinaryResponse.public_id,
+//             url: cloudinaryResponse.secure_url,
 //         };
-
-//         // Save user
 //         await user.save();
 
 //         res.status(200).send({
 //             success: true,
 //             message: "Profile picture updated",
-//             profilePic: user.profilePic,
 //         });
 //     } catch (error) {
 //         console.error(error);
@@ -297,6 +352,7 @@ const updateProfilePicController = async(req,res)=>{
 //     }
 // };
 
+
 module.exports = {
     registerController,
     loginController,
@@ -306,3 +362,5 @@ module.exports = {
     updatePasswordController,
     updateProfilePicController,
 };
+
+
