@@ -9,7 +9,7 @@ const {
     updateProfilePicController,
 } = require('../controllers/userController');
 const isAuth = require("../middlewares/authMiddleware.js");
-const upload = require('../middlewares/multer.js'); 
+// const upload = require('../middlewares/multer'); 
 const singleUpload = require('../middlewares/multer.js');
 const multer = require('multer');
 const allupload = multer({ dest: 'uploads/' });
@@ -41,3 +41,5 @@ router.put('/update-picture', isAuth, singleUpload, updateProfilePicController);
 
 // Export the router
 module.exports = router;
+
+

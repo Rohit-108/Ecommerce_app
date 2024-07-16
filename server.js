@@ -47,10 +47,11 @@ app.use(methodOverride('_method'));
 // route
 const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
-
+const productRoutes = require("./routes/productRoutes");
 
 app.use('/api/v1', testRoutes);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/product', productRoutes);
 
 
 
