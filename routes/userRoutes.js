@@ -8,10 +8,9 @@ const {
     updatePasswordController,
     updateProfilePicController,
 } = require('../controllers/userController');
-const isAuth = require("../middlewares/authMiddleware.js");
-// const upload = require('../middlewares/multer'); 
-const singleUpload = require('../middlewares/multer.js');
 const multer = require('multer');
+const isAuth = require("../middlewares/authMiddleware.js");
+const singleUpload = require('../middlewares/multer.js');
 const allupload = multer({ dest: 'uploads/' });
 
 // Create the router object
@@ -37,7 +36,8 @@ router.put('/profile-update', isAuth, updateProfileController);
 router.put('/update-password', isAuth, updatePasswordController);
 
 // Update profile picture
-router.put('/update-picture', isAuth, singleUpload, updateProfilePicController);
+// router.put('/update-picture', isAuth, singleUpload, updateProfilePicController);
+router.put("/update-picture", isAuth, singleUpload, updateProfilePicController);
 
 // Export the router
 module.exports = router;

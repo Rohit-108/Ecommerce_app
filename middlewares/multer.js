@@ -64,12 +64,12 @@
                                 // const singleUpload = multer({ storage:storage }).single("file");
                                 
                                 // module.exports = singleUpload;
-                                 const multer = require("multer");
+const multer = require("multer");
                                 
-                                const storage = multer.memoryStorage();
-                                const upload = multer({ storage });
+const storage = multer.memoryStorage();
+const singleUpload = multer({ storage }).single("file");
                                 
-                                module.exports = upload;
+module.exports = singleUpload;
                                 
                                 
                                 
