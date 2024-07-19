@@ -9,9 +9,6 @@ const cloudinary = require('cloudinary');
 const bodyParser = require('body-parser')
 const path = require('path');
 const methodOverride = require('method-override'); 
-const db = require('./config/db');
-// const expressformidable = require('express-formidable');
-
 
 // database connect
 connectDB();
@@ -40,18 +37,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(cookieParser());
 app.use(methodOverride('_method'));
-// app.use(expressformidable());
-
 
 
 // route
 const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require("./routes/productRoutes");
+const categoryRoutes = require("./routes/categoryRoutes.js")
 
 app.use('/api/v1', testRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
+app.use('/api/v1/category', categoryRoutes);
 
 
 

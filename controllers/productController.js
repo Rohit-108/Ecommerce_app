@@ -63,12 +63,26 @@ const createProductController = async (req, res) => {
         const { name, description, price, category, stock } = req.body;
 
         // Validation
-        if (!name || !description || !price || !category || !stock) {
-            return res.status(400).send({
+        if (!name || !description || !price || !stock) {
+            return res.status(400).json({
                 success: false,
-                message: 'Please provide all required fields',
+                message: 'Please provide all required fields'
             });
         }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a product image'
+            });
+        }
+
+        const file = getDataUri(req.file);
+
+        // Upload product image to Cloudinary
+        const result = await cloudinary.uploader.upload(file.content, {
+            folder: 'product_pics'
+        });
 
         // Create the product
         const newProduct = await productModel.create({
@@ -76,17 +90,21 @@ const createProductController = async (req, res) => {
             description,
             price,
             category,
-            stock
+            stock,
+            images: {
+                url: result.secure_url,
+                public_id: result.public_id
+            }
         });
 
-        res.status(201).send({
+        res.status(201).json({
             success: true,
-            message: "Product created successfully",
+            message: 'Product created successfully',
             product: newProduct
         });
     } catch (error) {
-        console.log(error);
-        res.status(500).send({
+        console.error(error);
+        res.status(500).json({
             success: false,
             message: 'Error creating product',
             error: error.message
@@ -135,6 +153,69 @@ const updateProductController = async(req,res )=>{
     }
 }
 
+// update product image
+const updateProductImageController = async (req, res) => {
+    try {
+        console.log('File:', req.file);
+        // Find product by id
+        const product = await productModel.findById(req.params.id);
+
+        // Validation
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+
+        // Check file 
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a product image"
+            });
+        }
+
+        const file = getDataUri(req.file);
+
+        const result = await cloudinary.uploader.upload(file.content);
+
+        const image = {
+            public_id: result.public_id,
+            url: result.secure_url
+        };
+
+        product.images = [];
+        
+        // Save new image
+        product.images.push(image);
+        await product.save();
+
+        res.status(200).send({
+            success: true,
+            message: "Product image uploaded successfully",
+            images: product.images
+        });
+    } catch (error) {
+        console.error(error);
+
+        // Handle CastError for invalid ObjectId
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID"
+            });
+        }
+
+        res.status(500).send({
+            success: false,
+            message: 'Error updating product',
+            error: error.message
+        });
+    }
+};
+
 // delete product
 const deleteProductController = async(req,res)=>{
         try{
@@ -148,7 +229,7 @@ const deleteProductController = async(req,res)=>{
             }
             // find and delete image 
             for (let index = 0; index < product.images.length; index++) {
-                await cloudinary.v2.uploader.destroy(product.images[index].public_id);
+                await cloudinary.uploader.destroy(product.images[index].public_id);
             }
             await product.deleteOne()
             res.status(200).send({
@@ -189,5 +270,6 @@ getSingleProductController,
 createProductController,
 updateProductController,
 deleteProductController,
-deleteAllProductsController
+deleteAllProductsController,
+updateProductImageController
 };

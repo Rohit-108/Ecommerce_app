@@ -22,10 +22,12 @@ const productSchema = new mongoose.Schema({
         type: String,
         ref : 'Category'
     },
-    images:{
-                public_id:String,
-                url: String
-    }
+    images: [
+        {
+          public_id: String,
+          url: String,
+        },
+      ],
 },{timestamps:true});
 
 const productModel = mongoose.model("Products", productSchema);
