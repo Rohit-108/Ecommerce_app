@@ -44,11 +44,13 @@ const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes.js")
+const orderRoutes = require("./routes/orderRoutes.js")
 
 app.use('/api/v1', testRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
 app.use('/api/v1/category', categoryRoutes);
+app.use('/api/v1/order', orderRoutes);
 
 
 

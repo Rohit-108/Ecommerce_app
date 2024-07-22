@@ -33,7 +33,7 @@ const OrderSchema = new mongoose.Schema({
             required: [true, "Product image is required"]
         },
         product:{
-            type:mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref : 'Products',
             required : true,
         }
@@ -77,5 +77,5 @@ const OrderSchema = new mongoose.Schema({
     
 }, { timestamps: true });
 
-const orderModel = mongoose.model("order", orderSchema);
+const orderModel = mongoose.model("order", OrderSchema);
 module.exports = orderModel;

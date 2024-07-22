@@ -29,6 +29,9 @@ const createCategoryController  = async(req,res)=>{
     }
 }
 
+
+
+
 // get all category
 const getAllCategoryController = async(req,res)=>{
     try{

@@ -63,7 +63,7 @@ const createProductController = async (req, res) => {
         const { name, description, price, category, stock } = req.body;
 
         // Validation
-        if (!name || !description || !price || !stock) {
+        if (!name || !description || !price || !stock || !category) {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide all required fields'
@@ -89,7 +89,7 @@ const createProductController = async (req, res) => {
             name,
             description,
             price,
-            category,
+            category: category.toString(),
             stock,
             images: {
                 url: result.secure_url,
