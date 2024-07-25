@@ -41,12 +41,22 @@ const userSchema = new mongoose.Schema({
             type : String,
         }
     },
+    answer:{
+        type:String,
+        required:[true, "answer is required"]
+    },
+    role:{
+        type: String,
+        default: 'user',
+    }
 },{timestamps:true});
 
 // for hash
 
 userSchema.pre('save', async function(next){
     if(!this.isModified('password')) return next()
+  // Only hash the password if it's been modified
+    
     this.password = await bcrypt.hash(this.password,10);
     next()
 })

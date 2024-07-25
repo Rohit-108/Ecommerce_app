@@ -3,13 +3,20 @@ const productModel = require("../models/productModel.js");
 const cloudinary = require("cloudinary").v2;  
 const { getDataUri } = require("../utils/features.js");
 
-// get all produts
+// get all products
 const getAllProductsController = async (req, res) => {
+    const{keyword, category}= req.query;
     try {
-        const products = await productModel.find({});
+        const products = await productModel.find({name:{
+            $regex: keyword ? keyword: '',
+            $options : "i"
+        },
+        category: category ? category :undefined,
+        }).populate('category')
         res.status(200).send({
             success: true,
             message: 'All products fetched successfully',
+            totalProducts : products.length,
             products
         });
     } catch (error) {
@@ -21,6 +28,26 @@ const getAllProductsController = async (req, res) => {
         })
     }
 };
+
+// get top products
+const getTopProductController = async(req,res)=>{
+    try{
+        const products = await productModel.find({}).sort({rating:-1}).limit(3)
+        res.status(200).send({
+            success: true,
+            message : "top 3 Products",
+            products
+        })
+    }catch (error) {
+        console.log(error);
+        res.status(500).send({
+            success : false,
+            message : 'error in top product API',
+            error : error.message
+        })
+    }
+}
+
 // get single product
 const getSingleProductController = async(req,res)=>{
     try{
@@ -265,11 +292,61 @@ const deleteAllProductsController = async (req, res) => {
     }
 };
 
+// create product review controller
+const productReviewController = async(req,res)=>{
+    try{
+        const {comment, rating} = req.body;
+        // find product
+        const product = await productModel.findById(req.params.id)
+        // check previous review
+        const alreadyReviewd = product.reviews.find((r)=> r.user.toString()===req.user._id.toString())
+        // validation
+        if(alreadyReviewd){
+            return res.status(400).send({
+                success:false,
+                message:"product alreday reviewed"
+            })
+        }
+        // review object
+        const review ={
+            name:req.user.name,
+            rating: Number(rating),
+            comment,
+            user:req.user._id
+        }
+        product.reviews.push(review)
+        product.numReviews = product.reviews.length
+        product.rating = product.reviews.reduce((acc,item)=>item.rating + acc, 0)/product.reviews.length
+        // save
+        await product.save()
+        res.status(200).send({
+            success:true,
+            message:"review added"
+        })
+    }catch (error) {
+        console.log(error);
+        // cast error ||  OBJECT ID
+        if (error.name === "CastError") {
+          return res.status(500).send({
+            success: false,
+            message: "Invalid Id",
+          });
+        }
+        res.status(500).send({
+          success: false,
+          message: "Error In Review Comment API",
+          error,
+        });
+      }
+}
+
 module.exports = {      getAllProductsController,
 getSingleProductController,
 createProductController,
 updateProductController,
 deleteProductController,
 deleteAllProductsController,
-updateProductImageController
+updateProductImageController,
+productReviewController,
+getTopProductController
 };

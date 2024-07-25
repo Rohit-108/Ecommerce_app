@@ -3,9 +3,9 @@ const { getDataUri } = require('../utils/features');
 const cloudinary = require("cloudinary").v2;
 const registerController =async (req,res)=>{
     try{
-        const {name,email,password,address,city,country,phone}=req.body;
+        const {name,email,password,address,city,country,phone, answer}=req.body;
         // validation
-        if(!name || !email || !password || !city || !address || !country  || !phone ){
+        if(!name || !email || !password || !city || !address || !country  || !phone || !answer ){
             return res.status(500).send({
                 success : false,
                 message : "please provide all fields",
@@ -28,11 +28,13 @@ const registerController =async (req,res)=>{
             address,
             country,
             phone,
+            answer,
             // profilePic
         });
         res.status(201).send({
             success:true,
-            message:"registratoin Success, Please login"
+            message:"registratoin Success, Please login",
+            user
         })
     }catch(error){
         console.error("error", error);
@@ -80,9 +82,6 @@ const registerController =async (req,res)=>{
         res.status(200)
         .cookie("token", token,{    
             expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),  
-            // secure: process.env.NODE_ENV === "development" ? true : false,
-            // httpOnly: process.env.NODE_ENV === "development" ? true : false,
-            // sameSite: process.env.NODE_ENV === "development" ? true : false
             secure: process.env.NODE_ENV !== "development",
                 httpOnly: process.env.NODE_ENV !== "development",
                 sameSite: process.env.NODE_ENV !== "development",
@@ -266,6 +265,45 @@ const updateProfilePicController = async (req, res) => {
     }
 };
 
+// forgot password
+const passwordResetController = async(req,res)=>{
+    try{
+        // user get email || new password || answer
+        const {email, newPassword,answer} = req.body
+        // validation
+        if(!email || !newPassword || !answer){
+             return res.status(500).send({
+                success:false,
+                message:"Please provide All fields",
+                error : error.message
+             })
+        }
+        // find user
+        const user = await userModel.findOne({email,answer})
+        // validation
+        if(!user){
+            return res.status(404).send({
+                success:false,
+                message:"invalid user or answer",
+                error:error.message
+            })
+        }
+        // change password
+        user.password = newPassword
+        await user.save()
+        res.status(200).send({
+            success:true,
+            message: "your password has been reset please login again"
+        })
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating profile picture',
+            error: error.message
+        });
+    }
+}
 
 module.exports = {
     registerController,
@@ -275,6 +313,7 @@ module.exports = {
     updateProfileController,
     updatePasswordController,
     updateProfilePicController,
+    passwordResetController,
 };
 
 
